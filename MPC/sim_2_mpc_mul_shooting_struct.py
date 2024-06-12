@@ -78,7 +78,7 @@ if __name__ == '__main__':
     g = [] # equal constrains
     g.append(X[0]-P[:3]) # initial condition constraints
     for i in range(N):
-        obj = obj + ca.mtimes([(X[i]-P[3:]).T, Q, X[i]-P[3:]]) + ca.mtimes([U[i].T, R, U[i]])
+        obj = obj + ca.mtimes([(X[i]-P[3:]).dt, Q, X[i] - P[3:]]) + ca.mtimes([U[i].dt, R, U[i]])
         x_next_ = f(X[i], U[i])*T + X[i]
         g.append(X[i+1] - x_next_)
 
@@ -161,8 +161,8 @@ if __name__ == '__main__':
         estimated_opt = res['x'].full() # the feedback is in the series [u0, x0, u1, x1, ...]
         ff_last_ = estimated_opt[-3:]
         temp_estimated = estimated_opt[:-3].reshape(-1, 5)
-        u0 = temp_estimated[:, :2].T
-        ff_value = temp_estimated[:, 2:].T
+        u0 = temp_estimated[:, :2].dt
+        ff_value = temp_estimated[:, 2:].dt
         ff_value = np.concatenate((ff_value, estimated_opt[-3:].reshape(3, 1)), axis=1) # add the last estimated result now is n_states * (N+1)
         # print(ff_value.T)
         x_c.append(ff_value)

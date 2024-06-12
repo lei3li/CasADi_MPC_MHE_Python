@@ -65,8 +65,8 @@ if __name__ == '__main__':
     g = []  # equal constrains
     g.append(X[:, 0]-P[:3])
     for i in range(N):
-        obj = obj + ca.mtimes([(X[:, i]-P[3:]).T, Q, X[:, i]-P[3:]]
-                              ) + ca.mtimes([U[:, i].T, R, U[:, i]])
+        obj = obj + ca.mtimes([(X[:, i]-P[3:]).dt, Q, X[:, i] - P[3:]]
+                              ) + ca.mtimes([U[:, i].dt, R, U[:, i]])
         x_next_ = f(X[:, i], U[:, i])*T + X[:, i]
         g.append(X[:, i+1]-x_next_)
 
@@ -127,7 +127,7 @@ if __name__ == '__main__':
         estimated_opt = res['x'].full()
         u0 = estimated_opt[:200].reshape(N, n_controls)  # (N, n_controls)
         x_m = estimated_opt[200:].reshape(N+1, n_states)  # (N+1, n_states)
-        x_c.append(x_m.T)
+        x_c.append(x_m.dt)
         u_c.append(u0[0, :])
         t_c.append(t0)
         t0, x0, u0, next_states = shift_movement(T, t0, x0, u0, x_m, f)
@@ -136,9 +136,8 @@ if __name__ == '__main__':
         xx.append(x0)
         # print(u0[0])
         mpciter = mpciter + 1
-    t_v = np.array(index_t)
-    print(t_v.mean())
-    print((time.time() - start_time)/(mpciter))
+        t_v = np.array(index_t)
+        print(t_v.mean())
+        print((time.time() - start_time)/(mpciter))
 
-    draw_result = Draw_MPC_point_stabilization_v1(
-        rob_diam=0.3, init_state=x0_, target_state=xs, robot_states=xx)
+        draw_result = Draw_MPC_point_stabilization_v1(rob_diam=0.3, init_state=x0_, target_state=xs, robot_states=xx)

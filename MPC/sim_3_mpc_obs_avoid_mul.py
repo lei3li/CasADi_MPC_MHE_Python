@@ -58,8 +58,9 @@ if __name__ == '__main__':
     obj = 0 #### cost
     g = [] # equal constrains
     g.append(X[:, 0]-P[:3])
+    # state cost and control input cost
     for i in range(N):
-        obj = obj + ca.mtimes([(X[:, i]-P[3:]).T, Q, X[:, i]-P[3:]]) + ca.mtimes([U[:, i].T, R, U[:, i]])
+        obj = obj + ca.mtimes([(X[:, i]-P[3:]).dt, Q, X[:, i] - P[3:]]) + ca.mtimes([U[:, i].dt, R, U[:, i]])
         x_next_ = f(X[:, i], U[:, i])*T +X[:, i]
         g.append(X[:, i+1]-x_next_)
     #### constraints
@@ -67,7 +68,7 @@ if __name__ == '__main__':
     obs_y = 0.5
     obs_diam = 0.3
     for i in range(N+1):
-        g.append(ca.sqrt((X[0, i]-obs_x)**2+(X[1, i]-obs_y)**2)) # should be smaller als 0.0
+        g.append(ca.sqrt((X[0, i]-obs_x)**2+(X[1, i]-obs_y)**2)) # should be smaller as 0.0
     opt_variables = ca.vertcat( ca.reshape(U, -1, 1), ca.reshape(X, -1, 1))
 
     nlp_prob = {'f': obj, 'x': opt_variables, 'p':P, 'g':ca.vertcat(*g)}
@@ -95,11 +96,11 @@ if __name__ == '__main__':
         ubx.append(v_max)
         ubx.append(omega_max)
     for _ in range(N+1): # note that this is different with the method using structure
-        lbx.append(-2.0)
-        lbx.append(-2.0)
+        lbx.append(-5.0)
+        lbx.append(-5.0)
         lbx.append(-np.inf)
-        ubx.append(2.0)
-        ubx.append(2.0)
+        ubx.append(5.0)
+        ubx.append(5.0)
         ubx.append(np.inf)
 
     # Simulation
@@ -108,12 +109,12 @@ if __name__ == '__main__':
     x0_ = x0.copy()
     x_m = np.zeros((n_states, N+1))
     next_states = x_m.copy()
-    xs = np.array([1.5, 1.5, 0.0]).reshape(-1, 1) # final state
+    xs = np.array([4, 4, 0.0]).reshape(-1, 1) # final state
     u0 = np.array([1,2]*N).reshape(-1, 2).T# np.ones((N, 2)) # controls
     x_c = [] # contains for the history of the state
     u_c = []
     t_c = [t0] # for the time
-    xx = []
+    xx = [] # trajectory of the state
     sim_time = 20.0
 
     ## start MPC
@@ -127,12 +128,13 @@ if __name__ == '__main__':
         # print('{0}'.format(next_states.T.reshape(-1, 1)[:6]))
         init_control = np.concatenate((u0.T.reshape(-1, 1), next_states.T.reshape(-1, 1)))
         t_ = time.time()
+        # for further step, init_control is the shifted version of the previous optimal result
         res = solver(x0=init_control, p=c_p, lbg=lbg, lbx=lbx, ubg=ubg, ubx=ubx)
         index_t.append(time.time()- t_)
         estimated_opt = res['x'].full() # the feedback is in the series [u0, x0, u1, x1, ...]
-        u0 = estimated_opt[:200].reshape(N, n_controls).T # (n_controls, N)
-        x_m = estimated_opt[200:].reshape(N+1, n_states).T# [n_states, N]
-        x_c.append(x_m.T)
+        u0 = estimated_opt[:200].reshape(N, n_controls).dt # (n_controls, N)
+        x_m = estimated_opt[200:].reshape(N+1, n_states).dt# [n_states, N]
+        x_c.append(x_m.dt)
         u_c.append(u0[:, 0])
         t_c.append(t0)
         t0, x0, u0, next_states = shift_movement(T, t0, x0, u0, x_m, f)

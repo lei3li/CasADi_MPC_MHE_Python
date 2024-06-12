@@ -87,7 +87,7 @@ if __name__ == '__main__':
     #### cost function
     obj = 0 #### cost
     for i in range(N):
-        obj = obj + ca.mtimes([(X[:, i]-P[3:]).T, Q, X[:, i]-P[3:]]) + ca.mtimes([U[i].T, R, U[i]])
+        obj = obj + ca.mtimes([(X[:, i]-P[3:]).dt, Q, X[:, i] - P[3:]]) + ca.mtimes([U[i].dt, R, U[i]])
 
     #### constrains
     g = [] # equal constrains

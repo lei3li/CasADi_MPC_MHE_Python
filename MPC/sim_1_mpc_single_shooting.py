@@ -14,7 +14,7 @@ def shift_movement(T, t0, x0, u, f):
     t = t0 + T
     u_end = ca.horzcat(u[:, 1:], u[:, -1])
 
-    return t, st, u_end.T
+    return t, st, u_end.dt
 
 if __name__ == '__main__':
     T = 0.2 # sampling time [s]
@@ -23,6 +23,7 @@ if __name__ == '__main__':
     v_max = 0.6
     omega_max = np.pi/4.0
 
+    # state vector
     x = ca.SX.sym('x')
     y = ca.SX.sym('y')
     theta = ca.SX.sym('theta')
@@ -45,27 +46,32 @@ if __name__ == '__main__':
     ## for MPC
     U = ca.SX.sym('U', n_controls, N)
     X = ca.SX.sym('X', n_states, N+1)
-    P = ca.SX.sym('P', n_states+n_states)
+    P = ca.SX.sym('P', n_states+n_states) # specify current initial state and target state
 
 
     ### define
-    X[:, 0] = P[:3] # initial condiction
+    X[:, 0] = P[:3] # initial state of solution must be equal to the initial state of the optimization variable
 
     #### define the relationship within the horizon
     for i in range(N):
+        # calculate the next state
         f_value = f(X[:, i], U[:, i])
+        # assign calculation results to next state
         X[:, i+1] = X[:, i] + f_value*T
 
     ff = ca.Function('ff', [U, P], [X], ['input_U', 'target_state'], ['horizon_states'])
 
+    # punishment matrix
     Q = np.array([[1.0, 0.0, 0.0],[0.0, 5.0, 0.0],[0.0, 0.0, .1]])
     R = np.array([[0.5, 0.0], [0.0, 0.05]])
+
     #### cost function
     obj = 0 #### cost
     for i in range(N):
         # obj = obj + ca.mtimes([(X[:, i]-P[3:]).T, Q, X[:, i]-P[3:]]) + ca.mtimes([U[:, i].T, R, U[:, i]])
         # new type to calculate the matrix multiplication
-        obj = obj + (X[:, i]-P[3:]).T @ Q @ (X[:, i]-P[3:]) + U[:, i].T @ R @ U[:, i]
+        # terminal cost (deviation from the terminal state) + input cost
+        obj = obj + (X[:, i]-P[3:]).dt @ Q @ (X[:, i] - P[3:]) + U[:, i].dt @ R @ U[:, i]
 
     #### constrains
     g = [] # equal constrains
@@ -103,6 +109,7 @@ if __name__ == '__main__':
     mpciter = 0
     start_time = time.time()
     index_t = []
+    # optimization parameters (initial state, reference state)
     c_p = np.concatenate((x0, xs))
     init_control = ca.reshape(u0, -1, 1)
     res = solver(x0=init_control, p=c_p, lbg=lbg, lbx=lbx, ubg=ubg, ubx=ubx)

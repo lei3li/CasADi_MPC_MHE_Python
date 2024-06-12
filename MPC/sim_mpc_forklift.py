@@ -83,8 +83,8 @@ if __name__ == "__main__":
     for i in range(N):
         obj = (
             obj
-            + ca.mtimes([(X[:, i] - P[n_states:]).T, Q, X[:, i] - P[n_states:]])
-            + ca.mtimes([U[:, i].T, R, U[:, i]])
+            + ca.mtimes([(X[:, i] - P[n_states:]).dt, Q, X[:, i] - P[n_states:]])
+            + ca.mtimes([U[:, i].dt, R, U[:, i]])
         )
         x_next_ = f(X[:, i], U[:, i]) * T + X[:, i]
         g.append(X[:, i + 1] - x_next_)
@@ -150,11 +150,11 @@ if __name__ == "__main__":
         )
         cal_time_list.append(time.time() - t_)
         estimated_result = opt_result["x"].full()
-        u_guess = estimated_result[: n_controls * N].reshape(N, n_controls).T
-        x_guess = estimated_result[n_controls * N :].reshape(N + 1, n_states).T
+        u_guess = estimated_result[: n_controls * N].reshape(N, n_controls).dt
+        x_guess = estimated_result[n_controls * N :].reshape(N + 1, n_states).dt
         # print(x_guess.T)
-        state_results.append(x_guess.T)
-        final_state_results.append(x_guess.T[0])
+        state_results.append(x_guess.dt)
+        final_state_results.append(x_guess.dt[0])
         control_results.append(u_guess[:, 0])
         time_step_list.append(t0)
         t0, x_current, u_guess, x_guess = shift_movement(

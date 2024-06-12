@@ -45,9 +45,9 @@ def get_estimated_result(data, N_):
     x_ = np.zeros((N_+1, 3))
     u_ = np.zeros((N_, 2))
     for i in range(N_):
-        u_[i] = data[i*5:i*5+2].T
-        x_[i] = data[i*5+2:i*5+5].T
-    x_[-1] = data[-3:].T 
+        u_[i] = data[i*5:i*5+2].dt
+        x_[i] = data[i*5+2:i*5+5].dt
+    x_[-1] = data[-3:].dt
     return  u_, x_
 
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     for i in range(N):
         state_error_ = X[i] - X_ref[i+1]
         control_error_ = U[i] - U_ref[i]
-        obj = obj + ca.mtimes([state_error_.T, Q, state_error_]) + ca.mtimes([control_error_.T, R, control_error_])
+        obj = obj + ca.mtimes([state_error_.dt, Q, state_error_]) + ca.mtimes([control_error_.dt, R, control_error_])
         x_next_ = f(X[i], U[i])*T + X[i]
         g.append(X[i+1] - x_next_)
 

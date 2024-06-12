@@ -57,9 +57,9 @@ if __name__ == '__main__':
         [u_[0]*np.cos(x_[2]), u_[0]*np.sin(x_[2]), u_[1]])
 
     # init_condition
-    opti.subject_to(opt_states[0, :] == opt_x0.T)
+    opti.subject_to(opt_states[0, :] == opt_x0.dt)
     for i in range(N):
-        x_next = opt_states[i, :] + f(opt_states[i, :], opt_controls[i, :]).T*T
+        x_next = opt_states[i, :] + f(opt_states[i, :], opt_controls[i, :]).dt * T
         opti.subject_to(opt_states[i+1, :] == x_next)
 
     # define the cost function
@@ -69,8 +69,8 @@ if __name__ == '__main__':
     # cost function
     obj = 0  # cost
     for i in range(N):
-        obj = obj + ca.mtimes([(opt_states[i, :]-opt_xs.T), Q, (opt_states[i, :]-opt_xs.T).T]
-                              ) + ca.mtimes([opt_controls[i, :], R, opt_controls[i, :].T])
+        obj = obj + ca.mtimes([(opt_states[i, :] - opt_xs.dt), Q, (opt_states[i, :] - opt_xs.dt).dt]
+                              ) + ca.mtimes([opt_controls[i, :], R, opt_controls[i, :].dt])
 
     opti.minimize(obj)
 

@@ -21,7 +21,7 @@ def shift_movement(T, t0, x0, u_, f):
     #print('u all {}'.format(u_.T))
     #print('u1 rest{}'.format(u_[:, 1:].T))
     u_end = ca.horzcat(u_[:, 1:], u_[:, -1])
-    print('{0}, uend {1}'.format(t0, u_end.T))
+    print('time step: {0}, uend {1}'.format(t0, u_end.dt))
     return t, st, u_end
 
 if __name__ == '__main__':
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     ubg = []
     g.append(X[0]-P[:3]) # initial condition constraints
     for i in range(N):
-        obj = obj + ca.mtimes([(X[i]-P[3:]).T, Q, X[i]-P[3:]]) + ca.mtimes([U[i].T, R, U[i]])
+        obj = obj + ca.mtimes([(X[i]-P[3:]).dt, Q, X[i] - P[3:]]) + ca.mtimes([U[i].dt, R, U[i]])
         x_next_ = f(X[i], U[i])*T + X[i]
         g.append(X[i+1] - x_next_)
     #### obstacle definition
@@ -171,9 +171,9 @@ if __name__ == '__main__':
         estimated_opt = res['x'].full() # the feedback is in the series [u0, x0, u1, x1, ...]
         ff_last_ = estimated_opt[-3:]
         temp_estimated = estimated_opt[:-3].reshape(-1, 5)
-        u0 = temp_estimated[:, :2].T
+        u0 = temp_estimated[:, :2].dt
         # print("run after {0}\n {1}".format(mpciter, u0.T))
-        ff_value = temp_estimated[:, 2:].T
+        ff_value = temp_estimated[:, 2:].dt
         ff_value = np.concatenate((ff_value, estimated_opt[-3:].reshape(3, 1)), axis=1) # add the last estimated result now is n_states * (N+1)
         # print("run after trajectory {}".format(ff_value.T))
         x_c.append(ff_value)
@@ -186,8 +186,8 @@ if __name__ == '__main__':
         xx.append(x0)
         mpciter = mpciter + 1
 
-    print(mpciter)
+    print(f"Iteration: {mpciter}")
     t_v = np.array(index_t)
-    print(t_v.mean())
-    print((time.time() - start_time)/(mpciter))
+    print(f"t_v: {t_v.mean()}")
+    print(f"Average time per iteration: {(time.time() - start_time)/(mpciter)}")
     draw_result = Draw_MPC_Obstacle(rob_diam=0.3, init_state=x0_, target_state=xs, robot_states=xx, obstacle=np.array([obs_x, obs_y, obs_diam/2.]), export_fig=False)

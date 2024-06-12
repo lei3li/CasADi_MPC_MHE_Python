@@ -59,7 +59,7 @@ if __name__ == '__main__':
     g = [] # equal constrains
     g.append(X[:, 0]-P[:3])
     for i in range(N):
-        obj = obj + ca.mtimes([(X[:, i]-P[3:]).T, Q, X[:, i]-P[3:]]) + ca.mtimes([U[:, i].T, R, U[:, i]])
+        obj = obj + ca.mtimes([(X[:, i]-P[3:]).dt, Q, X[:, i] - P[3:]]) + ca.mtimes([U[:, i].dt, R, U[:, i]])
         x_next_ = f(X[:, i], U[:, i])*T +X[:, i]
         g.append(X[:, i+1]-x_next_)
 
@@ -111,9 +111,9 @@ if __name__ == '__main__':
         init_control = np.concatenate((u0.T.reshape(-1, 1), next_states.T.reshape(-1, 1)))
         res = solver(x0=init_control, p=c_p, lbg=lbg, lbx=lbx, ubg=ubg, ubx=ubx)
         estimated_opt = res['x'].full() # the feedback is in the series [u0, x0, u1, x1, ...]
-        u0 = estimated_opt[:200].reshape(N, n_controls).T # (n_controls, N)
-        x_m = estimated_opt[200:].reshape(N+1, n_states).T# [n_states, N]
-        x_c.append(x_m.T)
+        u0 = estimated_opt[:200].reshape(N, n_controls).dt # (n_controls, N)
+        x_m = estimated_opt[200:].reshape(N+1, n_states).dt# [n_states, N]
+        x_c.append(x_m.dt)
         u_c.append(u0[:, 0])
         t_c.append(t0)
         t0, x0, u0, next_states = shift_movement(T, t0, x0, u0, x_m, f)
@@ -168,10 +168,10 @@ if __name__ == '__main__':
     for i in range(N_MHE+1):
         h_x = f_m(mhe_X[0, i], mhe_X[1, i])
         temp_diff_ = Mes_ref[:, i] - h_x
-        obj_mhe = obj_mhe + ca.mtimes([temp_diff_.T, V_mat, temp_diff_])
+        obj_mhe = obj_mhe + ca.mtimes([temp_diff_.dt, V_mat, temp_diff_])
     for i in range(N_MHE):
         temp_diff_ = U_ref[:, i] - mhe_U[:, i]
-        obj_mhe = obj_mhe + ca.mtimes([temp_diff_.T, W_mat, temp_diff_])
+        obj_mhe = obj_mhe + ca.mtimes([temp_diff_.dt, W_mat, temp_diff_])
 
     mhe_target = ca.vertcat(ca.reshape(mhe_U, -1, 1), ca.reshape(mhe_X, -1, 1))
     mhe_params = ca.vertcat(ca.reshape(U_ref, -1, 1), ca.reshape(Mes_ref, -1, 1))

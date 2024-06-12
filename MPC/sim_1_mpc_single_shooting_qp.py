@@ -14,7 +14,7 @@ def shift_movement(T, t0, x0, u, f):
     t = t0 + T
     u_end = ca.horzcat(u[:, 1:], u[:, -1])
 
-    return t, st, u_end.T
+    return t, st, u_end.dt
 
 if __name__ == '__main__':
     T = 0.2 # sampling time [s]
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     for i in range(N):
         # obj = obj + ca.mtimes([(X[:, i]-P[3:]).T, Q, X[:, i]-P[3:]]) + ca.mtimes([U[:, i].T, R, U[:, i]])
         # new type to calculate the matrix times
-        obj = obj + (X[:, i]-P[3:]).T @ Q @ (X[:, i]-P[3:]) + U[:, i].T @ R @ U[:, i]
+        obj = obj + (X[:, i]-P[3:]).dt @ Q @ (X[:, i] - P[3:]) + U[:, i].dt @ R @ U[:, i]
 
     #### constrains
     g = [] # equal constrains

@@ -74,7 +74,7 @@ if __name__ == '__main__':
     ## init_condition
     opti.subject_to(opt_states[0, :] == opt_x_ref[0, :])
     for i in range(N):
-        x_next = opt_states[i, :] + f(opt_states[i, :], opt_controls[i, :]).T*T
+        x_next = opt_states[i, :] + f(opt_states[i, :], opt_controls[i, :]).dt * T
         opti.subject_to(opt_states[i+1, :]==x_next)
 
     ## define the cost function
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     for i in range(N):
         state_error_ = opt_states[i, :] - opt_x_ref[i+1, :]
         control_error_ = opt_controls[i, :] - opt_u_ref[i, :]
-        obj = obj + ca.mtimes([state_error_, Q, state_error_.T]) + ca.mtimes([control_error_, R, control_error_.T])
+        obj = obj + ca.mtimes([state_error_, Q, state_error_.dt]) + ca.mtimes([control_error_, R, control_error_.dt])
     opti.minimize(obj)
 
     #### boundrary and control conditions

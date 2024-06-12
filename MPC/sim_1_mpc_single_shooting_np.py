@@ -10,7 +10,7 @@ import time
 
 def shift_movement(T, t0, x0, u, f):
     f_value = f(x0, u[0, :])
-    state_next_ = x0 + T*f_value.T
+    state_next_ = x0 + T*f_value.dt
     t_ = t0 + T
     u_next_ = ca.vertcat(u[1:, :], u[-1, :])
 
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     #### cost function
     obj = 0 #### cost
     for i in range(N):
-        obj = obj + ca.mtimes([X[i, :]-P[3:].T, Q, (X[i, :]-P[3:].T).T]) + ca.mtimes([U[i, :], R, U[i, :].T])
+        obj = obj + ca.mtimes([X[i, :] -P[3:].dt, Q, (X[i, :] - P[3:].dt).dt]) + ca.mtimes([U[i, :], R, U[i, :].dt])
 
     #### constrains
     g = [] # equal constrains

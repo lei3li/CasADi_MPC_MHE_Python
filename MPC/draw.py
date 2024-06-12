@@ -65,7 +65,7 @@ class Draw_MPC_Obstacle(object):
         self.target_state = target_state
         self.rob_radius = rob_diam / 2.0
         self.fig = plt.figure()
-        self.ax = plt.axes(xlim=(-0.8, 3), ylim=(-0.8, 3.))
+        self.ax = plt.axes(xlim=(-0.8, 5), ylim=(-0.8, 5.))
         if obstacle is not None:
             self.obstacle = obstacle
         else:
@@ -117,7 +117,7 @@ class Draw_MPC_tracking(object):
         self.robot_states = robot_states
         self.rob_radius = rob_diam
         self.fig = plt.figure()
-        self.ax = plt.axes(xlim=(-1.0, 16), ylim=(-0.5, 1.5))
+        self.ax = plt.axes(xlim=(-1.0, 16), ylim=(-0.5, 10))
         # self.fig.set_size_inches(7, 6.5)
         # init for plot
         self.animation_init()

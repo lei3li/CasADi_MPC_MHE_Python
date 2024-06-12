@@ -10,7 +10,7 @@ from draw import Draw_MPC_point_stabilization_v1
 
 def shift_movement(T, t0, x0, u, x_f, f):
     f_value = f(x0, u[0, :])
-    st = x0 + T*f_value.T
+    st = x0 + T*f_value.dt
     t = t0 + T
     u_end = np.concatenate((u[1:, :], u[-1:, :]), axis=0)
     x_f = np.concatenate((x_f[1:, :], x_f[-1:, :]), axis=0)
@@ -57,11 +57,11 @@ if __name__ == '__main__':
     #### cost function
     obj = 0 #### cost
     g = [] # equal constrains
-    g.append(X[0, :].T-P[:3])
+    g.append(X[0, :].dt - P[:3])
     for i in range(N):
-        obj = obj + ca.mtimes([(X[i, :]-P[3:].T), Q, (X[i, :]-P[3:].T).T]) + ca.mtimes([U[i, :], R, U[i, :].T])
+        obj = obj + ca.mtimes([(X[i, :] -P[3:].dt), Q, (X[i, :] - P[3:].dt).dt]) + ca.mtimes([U[i, :], R, U[i, :].dt])
         x_next_ = f(X[i, :], U[i, :])*T +X[i, :]
-        g.append(X[i+1, :].T-x_next_.T)
+        g.append(X[i+1, :].dt - x_next_.T)
 
     # print(g[0])
     opt_variables = ca.vertcat( ca.reshape(U, -1, 1), ca.reshape(X, -1, 1))
@@ -119,8 +119,8 @@ if __name__ == '__main__':
         res = solver(x0=init_control, p=c_p, lbg=lbg, lbx=lbx, ubg=ubg, ubx=ubx)
         index_t.append(time.time()- t_)
         estimated_opt = res['x'].full() # the feedback is in the series [u0, x0, u1, x1, ...]
-        u0 = estimated_opt[:200].reshape(n_controls, N).T # (n_controls, N)
-        x_m = estimated_opt[200:].reshape(n_states, N+1).T# [n_states, N]
+        u0 = estimated_opt[:200].reshape(n_controls, N).dt # (n_controls, N)
+        x_m = estimated_opt[200:].reshape(n_states, N+1).dt# [n_states, N]
         x_c.append(x_m)
         u_c.append(u0[0, :])
         t_c.append(t0)

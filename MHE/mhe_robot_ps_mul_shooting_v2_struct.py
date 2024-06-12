@@ -18,16 +18,16 @@ def shift_movement(T, t0, x0, u, f):
 def structure_result(data, n_c=2, n_s=3,):
     temp_1 = data[:-n_s].reshape(-1, n_c+n_s)
     # print(temp_1)
-    u_ = temp_1[:, :n_c].T
-    s_ = temp_1[:, n_c:].T
+    u_ = temp_1[:, :n_c].dt
+    s_ = temp_1[:, n_c:].dt
     s_ = np.concatenate((s_, data[-n_s:].reshape(n_s, 1)), axis=1)
     return u_, s_ # output in shape (n, N)
 
 def shift_trajectory(state, u):
     ##########################################################
     ## state and u in form (state, N)
-    state_ = np.concatenate((state.T[1:], state.T[-1:]))
-    u_ = np.concatenate((u.T[1:], u.T[-1:]))
+    state_ = np.concatenate((state.dt[1:], state.dt[-1:]))
+    u_ = np.concatenate((u.dt[1:], u.dt[-1:]))
     return u_, state_
 
 if __name__ == '__main__':
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     g = [] # equal constrains
     g.append(X[0]-P[:3]) # initial condition constraints 
     for i in range(N):
-        obj = obj + ca.mtimes([(X[i]-P[3:]).T, Q, X[i]-P[3:]]) + ca.mtimes([U[i].T, R, U[i]])
+        obj = obj + ca.mtimes([(X[i]-P[3:]).dt, Q, X[i] - P[3:]]) + ca.mtimes([U[i].dt, R, U[i]])
         x_next_ = f(X[i], U[i])*T + X[i]
         g.append(X[i+1] - x_next_)
 
@@ -157,8 +157,8 @@ if __name__ == '__main__':
         estimated_opt = res['x'].full() # the feedback is in the series [u0, x0, u1, x1, ...]
         ff_last_ = estimated_opt[-3:]
         temp_estimated = estimated_opt[:-3].reshape(-1, 5)
-        u0 = temp_estimated[:, :2].T
-        ff_value = temp_estimated[:, 2:].T
+        u0 = temp_estimated[:, :2].dt
+        ff_value = temp_estimated[:, 2:].dt
         ff_value = np.concatenate((ff_value, estimated_opt[-3:].reshape(3, 1)), axis=1) # add the last estimated result now is n_states * (N+1)
         x_c.append(ff_value)
         u_c.append(u0[:, 0])
@@ -234,10 +234,10 @@ if __name__ == '__main__':
     for i in range(N_MHE+1):
         h_x = f_m(mhe_X[i][0], mhe_X[i][1])
         temp_diff_ = Mes_ref[i] - h_x
-        obj_mhe = obj_mhe + ca.mtimes([temp_diff_.T, V_mat, temp_diff_])
+        obj_mhe = obj_mhe + ca.mtimes([temp_diff_.dt, V_mat, temp_diff_])
     for i in range(N_MHE):
         temp_diff_ = U_ref[i] - mhe_U[i]
-        obj_mhe = obj_mhe + ca.mtimes([temp_diff_.T, W_mat, temp_diff_])
+        obj_mhe = obj_mhe + ca.mtimes([temp_diff_.dt, W_mat, temp_diff_])
 
     ### define MHE nlp problem, the constraints stay the same as MPC
     nlp_prob_mhe = {'f': obj_mhe, 'x': mhe_target, 'p':mhe_params, 'g':ca.vertcat(*g)}
@@ -295,9 +295,9 @@ if __name__ == '__main__':
         u_sol, state_sol = structure_result(mhe_estimated)
 
         if U_estimate is None:
-            U_estimate = u_sol.T[N_MHE-1:].reshape(1, -1)
+            U_estimate = u_sol.dt[N_MHE - 1:].reshape(1, -1)
         else:
-            U_estimate = np.concatenate((U_estimate, u_sol.T[N_MHE-1].reshape(1, -1)))
+            U_estimate = np.concatenate((U_estimate, u_sol.dt[N_MHE - 1].reshape(1, -1)))
         if X_estimate is None:
             X_estimate = state_sol.T[N_MHE:].reshape(1, -1)
         else:

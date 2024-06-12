@@ -52,9 +52,9 @@ if __name__ == '__main__':
     f_np = lambda x_, u_: np.array([u_[0]*np.cos(x_[2]), u_[0]*np.sin(x_[2]), u_[1]])
 
     ## init_condition
-    opti.subject_to(opt_states[0, :] == opt_x0.T)
+    opti.subject_to(opt_states[0, :] == opt_x0.dt)
     for i in range(N):
-        x_next = opt_states[i, :] + f(opt_states[i, :], opt_controls[i, :]).T*T
+        x_next = opt_states[i, :] + f(opt_states[i, :], opt_controls[i, :]).dt * T
         opti.subject_to(opt_states[i+1, :]==x_next)
 
     ## define the cost function
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     #### cost function
     obj = 0 #### cost
     for i in range(N):
-        obj = obj + ca.mtimes([(opt_states[i, :]-opt_xs.T), Q, (opt_states[i, :]-opt_xs.T).T]) + ca.mtimes([opt_controls[i, :], R, opt_controls[i, :].T])
+        obj = obj + ca.mtimes([(opt_states[i, :] - opt_xs.dt), Q, (opt_states[i, :] - opt_xs.dt).dt]) + ca.mtimes([opt_controls[i, :], R, opt_controls[i, :].dt])
 
     opti.minimize(obj)
 
@@ -159,18 +159,18 @@ if __name__ == '__main__':
     obj_mhe = 0
     for i in range(N_MHE+1):
         h_x = f_m(mhe_states[i, 0], mhe_states[i, 1])
-        temp_diff_ = mhe_mes_ref[i, :] - h_x.T
-        obj_mhe = obj_mhe + ca.mtimes([temp_diff_, V_mat, temp_diff_.T])
+        temp_diff_ = mhe_mes_ref[i, :] - h_x.dt
+        obj_mhe = obj_mhe + ca.mtimes([temp_diff_, V_mat, temp_diff_.dt])
 
     for i in range(N_MHE):
         temp_diff_ = mhe_u_ref[i, :] - mhe_controls[i, :]
-        obj_mhe = obj_mhe + ca.mtimes([temp_diff_, W_mat, temp_diff_.T])
+        obj_mhe = obj_mhe + ca.mtimes([temp_diff_, W_mat, temp_diff_.dt])
 
     mhe_opt.minimize(obj_mhe)
 
     ## multiple shooting constraints
     for i in range(N_MHE):
-        x_next_ = mhe_states[i, :] + f(mhe_states[i, :], mhe_controls[i, :]).T*T
+        x_next_ = mhe_states[i, :] + f(mhe_states[i, :], mhe_controls[i, :]).dt * T
         mhe_opt.subject_to(mhe_states[i+1, :]==x_next_)
 
     #### boundrary and control conditions
